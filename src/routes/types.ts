@@ -1,0 +1,24 @@
+import type {Mode,Sample} from '../domain';
+export type Coordinate={lat:number;lon:number;ele?:number|null};
+export type Waypoint=Coordinate&{name?:string};
+export type RideType='road'|'recreation'|'gravel';
+export type ElevationOrigin='original'|'interpolated'|'dem'|'missing';
+export type ProfilePoint=Coordinate&{distance:number;altitude:number|null;rawAltitude:number|null;grade:number|null;origin:ElevationOrigin};
+export type ElevationOptions={spacing:number;smoothing:number;maxGap:number;maxGrade:number};
+export const defaultElevationOptions:ElevationOptions={spacing:100,smoothing:100,maxGap:300,maxGrade:30};
+export type ElevationProfile={points:ProfilePoint[];distance:number;ascent:number|null;descent:number|null;min:number|null;max:number|null;maxGrade:number|null;coverage:number;source:string;resolution:number|null;options:ElevationOptions;warnings:string[];gradeDistribution:{name:string;distance:number;color:string}[]};
+export type StoredRoute={id:string;name:string;description:string;createdAt:string;updatedAt:string;geometry:Coordinate[];waypoints:Waypoint[];pois:Waypoint[];profile:ElevationProfile;rideType:RideType;source:'routing'|'gpx'|'demo';provider:string;attribution:string;originalGpx?:string};
+export type PhysicsSettings={riderMass:number;bikeMass:number;crr:number;cda:number;rho:number;efficiency:number};
+export const defaultPhysics:PhysicsSettings={riderMass:70,bikeMass:10,crr:.005,cda:.32,rho:1.225,efficiency:.97};
+export type ProviderSettings={routingType:'valhalla'|'osrm';routingUrl:string;geocodingType:'open-meteo'|'nominatim';geocodingUrl:string;elevationUrl:string;elevationType:'open-meteo'|'opentopodata';mapType:'streets'|'relief'|'local'};
+export const defaultProviders:ProviderSettings={routingType:'valhalla',routingUrl:'https://valhalla1.openstreetmap.de/route',geocodingType:'open-meteo',geocodingUrl:'https://geocoding-api.open-meteo.com/v1/search',elevationUrl:'https://api.open-meteo.com/v1/elevation',elevationType:'open-meteo',mapType:'streets'};
+export type SimulationSettings={speedSource:'measured'|'physics';physics:PhysicsSettings;demoRate:number};
+export const defaultSimulation:SimulationSettings={speedSource:'measured',physics:defaultPhysics,demoRate:1};
+export type RouteProgress={t:number;distance:number;speed:number;speedSource:'measured'|'virtual'|'demo';altitude:number|null;grade:number|null;ascent:number;power:number|null;cadence:number|null;heartRate:number|null;control:string};
+export type RouteActivity={route:StoredRoute;progress:RouteProgress[];distance:number;ascent:number;movingTime:number;stoppedTime:number;speedSource:SimulationSettings['speedSource'];settings:SimulationSettings;controlProtocols:string[];completed:boolean};
+export type RouteDraft={planId?:string;id:string;date:string;mode:Mode;ftp:number;activeTime:number;elapsed:number;samples:Sample[];activity:RouteActivity};
+export interface RoutingProvider{id:string;calculate(points:Coordinate[],type:RideType,signal:AbortSignal,progress?:(fraction:number)=>void):Promise<{geometry:Coordinate[];attribution:string}>}
+export interface GeocodingProvider{id:string;search(query:string,signal:AbortSignal):Promise<{name:string;lat:number;lon:number}[]>}
+export interface ElevationProvider{id:string;resolution:number|null;attribution:string;fetch(points:Coordinate[],signal:AbortSignal,progress?:(fraction:number)=>void):Promise<(number|null)[]>}
+export interface MapProvider{id:string;label:string;tileUrl:string|null;attribution:string;maxZoom:number;bounds?:[[number,number],[number,number]]}
+export const SAGUNTO:Coordinate={lat:39.6801,lon:-.2784};

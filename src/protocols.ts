@@ -1,0 +1,23 @@
+import type {Telemetry,TrainerProtocolAdapter} from './domain';
+export const uuid=(v:number)=>`${v.toString(16).padStart(8,'0')}-0000-1000-8000-00805f9b34fb`;
+/** Normalize native bridge UUIDs before any label, parser or control comparison. */
+export function normalizeUuid(value:string){const s=value.trim().toLowerCase().replace(/^0x/,'');if(/^[0-9a-f]{4}$|^[0-9a-f]{8}$/.test(s))return `${s.padStart(8,'0')}-0000-1000-8000-00805f9b34fb`;return s;}
+export const DEVICE_INFO:Record<string,string>={ [uuid(0x2a29)]:'Fabricante',[uuid(0x2a24)]:'Modelo',[uuid(0x2a25)]:'Número de serie',[uuid(0x2a27)]:'Hardware',[uuid(0x2a26)]:'Firmware',[uuid(0x2a28)]:'Software'};
+export function deviceInfoText(characteristic:string,value:DataView){if(!DEVICE_INFO[normalizeUuid(characteristic)])return undefined;return new TextDecoder().decode(new Uint8Array(value.buffer,value.byteOffset,value.byteLength)).replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,200);}
+
+export const SERVICES=[0x1826,0x1818,0x1816,0x180d,0x180a].map(uuid);
+export const SHORT:Record<string,string>={...DEVICE_INFO,[uuid(0x2a65)]:'Cycling Power Feature',[uuid(0x2a5d)]:'Sensor Location', [uuid(0x1826)]:'Fitness Machine · FTMS',[uuid(0x1818)]:'Cycling Power · CPS',[uuid(0x1816)]:'Speed & Cadence · CSC',[uuid(0x180d)]:'Heart Rate',[uuid(0x180a)]:'Device Information',[uuid(0x2ad2)]:'Indoor Bike Data',[uuid(0x2a63)]:'Cycling Power Measurement',[uuid(0x2a5b)]:'CSC Measurement',[uuid(0x2a37)]:'Heart Rate Measurement',[uuid(0x2acc)]:'Fitness Machine Feature',[uuid(0x2ad8)]:'Supported Power Range',[uuid(0x2ad6)]:'Supported Resistance Range',[uuid(0x2ad9)]:'Fitness Machine Control Point',[uuid(0x2ada)]:'Fitness Machine Status'};
+class Reader{offset=0;constructor(public d:DataView){}u8(){const v=this.d.getUint8(this.offset);this.offset++;return v;}u16(){const v=this.d.getUint16(this.offset,true);this.offset+=2;return v;}i16(){const v=this.d.getInt16(this.offset,true);this.offset+=2;return v;}u32(){const v=this.d.getUint32(this.offset,true);this.offset+=4;return v;}skip(n:number){if(this.offset+n>this.d.byteLength)throw new Error('Paquete BLE incompleto');this.offset+=n;}}
+export function indoorBike(d:DataView):Telemetry{const r=new Reader(d),f=r.u16(),out:Telemetry={};if(!(f&1))out.speed=r.u16()/100;if(f&2)r.skip(2);if(f&4)out.cadence=r.u16()/2;if(f&8)r.skip(2);if(f&16)r.skip(3);if(f&32)r.skip(2);if(f&64)out.power=r.i16();if(f&128)r.skip(2);if(f&256)r.skip(5);if(f&512)out.heartRate=r.u8();if(f&1024)r.skip(1);if(f&2048)r.skip(2);if(f&4096)r.skip(2);return out;}
+export function heartRate(d:DataView):Telemetry{const r=new Reader(d),f=r.u8(),v=f&1?r.u16():r.u8();if((f&4)&&!(f&2))return {};return {heartRate:v};}
+type Revolution={count:number;time:number};
+export class StandardAdapter implements TrainerProtocolAdapter{
+ id='standard-ble';private previous=new Map<string,Revolution>();constructor(public wheelMm=2105){}
+ private rate(key:string,count:number,time:number,ticks:number,bits=16){const prev=this.previous.get(key);this.previous.set(key,{count,time});if(!prev)return null;const dt=(time-prev.time+65536)%65536,dr=(count-prev.count+2**bits)%2**bits;if(!dt||dr>1000)return null;return dr*ticks/dt;}
+ decode(c:string,d:DataView):Telemetry{c=normalizeUuid(c);if(c===uuid(0x2ad2))return indoorBike(d);if(c===uuid(0x2a37))return heartRate(d);const out:Telemetry={},r=new Reader(d);if(c===uuid(0x2a63)){const f=r.u16();out.power=r.i16();if(f&1)r.skip(1);if(f&4)r.skip(2);if(f&16){const n=this.rate('cp-wheel',r.u32(),r.u16(),2048,32);if(n!==null&&n*this.wheelMm*.0036<=150)out.speed=n*this.wheelMm*.0036;}if(f&32){const n=this.rate('cp-crank',r.u16(),r.u16(),1024);if(n!==null&&n*60<=250)out.cadence=n*60;}return out;}
+ if(c===uuid(0x2a5b)){const f=r.u8();if(f&1){const n=this.rate('csc-wheel',r.u32(),r.u16(),1024,32);if(n!==null&&n*this.wheelMm*.0036<=150)out.speed=n*this.wheelMm*.0036;}if(f&2){const n=this.rate('csc-crank',r.u16(),r.u16(),1024);if(n!==null&&n*60<=250)out.cadence=n*60;}return out;}return {};}
+}
+export type Range={min:number;max:number;step:number};
+export function powerRange(d:DataView):Range{if(d.byteLength<6)throw new Error('Rango incompleto');const range={min:d.getInt16(0,true),max:d.getInt16(2,true),step:d.getUint16(4,true)};if(range.step<=0||range.min>range.max)throw new Error('Rango de control inválido');return range;}
+export function powerCommand(watts:number){const bytes=new Uint8Array(3);bytes[0]=5;new DataView(bytes.buffer).setInt16(1,watts,true);return bytes;}
+export function quantize(v:number,r:Range){return Math.max(r.min,Math.min(r.max,r.min+Math.round((v-r.min)/r.step)*r.step));}

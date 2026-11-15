@@ -1,0 +1,16 @@
+import {readdir,readFile,writeFile,copyFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+await copyFile('README.md','dist/README.md');
+await mkdir('dist/docs',{recursive:true});
+for(const file of await readdir('docs'))if(file.endsWith('.md'))await copyFile('docs/'+file,'dist/docs/'+file);
+await mkdir('dist/native',{recursive:true});
+await copyFile('native/README.md','dist/native/README.md');
+const assets=(await readdir('dist/assets')).map(x=>'/assets/'+x);
+const files=['/','/index.html','/README.md','/manifest.webmanifest','/icon.svg','/icon-192.png','/icon-512.png',...assets];
+const hash=createHash('sha256').update(await readFile('dist/index.html')).digest('hex').slice(0,12);
+await writeFile('dist/sw.js',`const CACHE='smart-air-${hash}';const FILES=${JSON.stringify(files)};
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('smart-air-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;const path=new URL(e.request.url).pathname;if(!FILES.includes(path))return;e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request)));});
+`);
+console.log('Offline precache generated:',files.length,'resources');

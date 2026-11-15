@@ -1,0 +1,5 @@
+import type {Coordinate,Waypoint,ElevationProfile,ElevationOptions,RideType,StoredRoute} from './types';
+export interface EditorDraft {name:string;description:string;points:Waypoint[];geometry:Coordinate[];elevation:ElevationProfile|null;elevationOptions:ElevationOptions;rideType:RideType;routeId:string|null;created:string;source:'routing'|'gpx'|'demo';attribution:string;providerName:string;pois:Waypoint[];savedAt?:string}
+export function editorContent(d:EditorDraft){return JSON.stringify([d.name,d.description,d.points,d.geometry,d.elevation,d.rideType,d.source,d.attribution,d.providerName,d.pois]);}
+export function routeEditor(r:StoredRoute):EditorDraft{return {name:r.name,description:r.description,points:r.waypoints,geometry:r.geometry,elevation:r.profile,elevationOptions:r.profile.options,rideType:r.rideType,routeId:r.id,created:r.createdAt,source:r.source,attribution:r.attribution,providerName:r.provider,pois:r.pois};}
+export function hasEditorWork(d:EditorDraft){return d.points.length>0||d.geometry.length>0||d.description!==''||d.name!=='Mi ruta desde Sagunto';}
