@@ -1,14 +1,14 @@
-# Smart Air Trainer · 3.0.2
+# Smart Air Trainer · 3.0.3
 
 Aplicación personal de ciclismo indoor para **iPad y iPhone**, con entrenamientos, rutas geográficas, historial local y conexión BLE directa con dispositivos compatibles. Diseñada alrededor del **Bkool Smart Air**; no necesita que Windows permanezca encendido cuando se utiliza desde una web alojada.
 
 - **Web existente:** https://smart-air-trainer-jonsui.monmode.chatgpt.site
-- **GitHub:** publicación del código aplazada por el propietario; esta entrega actualiza la web de Sites.
-- **Versión:** 3.0.2 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
+- **GitHub:** https://github.com/mudanzasalegre/Smart-Air-Trainer
+- **Versión:** 3.0.3 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
 - Sin backend de sesiones, cuenta deportiva, analítica ni API de pago obligatoria.
-- El acceso privado de ChatGPT Sites pertenece al alojamiento: es independiente de los datos deportivos y de la privacidad del repositorio GitHub.
+- La web y el repositorio son públicos; los datos deportivos permanecen en el almacenamiento local del navegador.
 
-> **Estado real de compatibilidad:** las capturas del usuario en Bluefy muestran conexión GATT y notificaciones Cycling Power Service de su BkoolAir, con firmware declarado 4.32. La corrección de interpretación de 3.0.2 aún debe comprobarse pedaleando con esa unidad; no se ha validado su control físico. No hay una configuración que pueda garantizar por sí sola la lectura y el control si el firmware no expone servicios compatibles. La primera conexión debe confirmar qué anuncia tu unidad. Este README diferencia funcionamiento de la app, acceso Bluetooth y control efectivo del rodillo.
+> **Estado real de compatibilidad:** las capturas del usuario en Bluefy muestran conexión GATT y notificaciones Cycling Power Service de su BkoolAir, con firmware declarado 4.32. Los informes posteriores del usuario confirman potencia variable de 91–96 W y pulsaciones BLE del Garmin de 70–77 ppm; no se ha validado el control físico del rodillo. No hay una configuración que pueda garantizar por sí sola la lectura y el control si el firmware no expone servicios compatibles. La primera conexión debe confirmar qué anuncia tu unidad. Este README diferencia funcionamiento de la app, acceso Bluetooth y control efectivo del rodillo.
 
 ## Contenido
 
@@ -53,7 +53,7 @@ La documentación de ROUVY identifica el **Smart Air** como compatible por Bluet
 1. Instala **[Bluefy – Web BLE Browser](https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055)** desde App Store. Revisa la ficha y las condiciones vigentes; no hace falta contratar un servicio de entrenamiento.
 2. Abre **Bluefy directamente** y escribe la URL de Smart Air Trainer. Un enlace abierto dentro de ChatGPT, Safari u otro navegador no se traslada automáticamente a Bluefy.
 3. Si la web de Sites pide acceso, inicia sesión con la cuenta propietaria **en ese navegador**. Tener sesión en Safari no garantiza tenerla en Bluefy. Si ese flujo de acceso no funciona en Bluefy, utiliza un despliegue HTTPS alternativo de este código: el login del alojamiento y Bluetooth son problemas diferentes.
-4. Entra en **Configuración** y comprueba `v3.0.2`; después, en **Perfil**, revisa el FTP, nombre y circunferencia de rueda.
+4. Entra en **Configuración** y comprueba `v3.0.3`; después, en **Perfil**, revisa el FTP, nombre y circunferencia de rueda.
 5. Prueba primero **Demo**, inicia una sesión corta y guárdala. Así verificas navegación, gráficos y almacenamiento antes de probar el hardware.
 6. Termina y guarda o descarta esa demo. Cambia a **Real** y sigue el apartado de conexión.
 
@@ -123,7 +123,7 @@ La opción **Autorizar UUID adicionales** acepta UUID conocidos por documentaci�
 
 Las capturas del usuario muestran UUID cortos en mayúsculas (`1818`, `2A63`). La app ahora los normaliza al UUID estándar completo antes de identificar protocolos, interpretar notificaciones o gestionar FTMS. Se conserva también el UUID original para diagnóstico. El paquete de la captura contiene potencia 0 W y contadores de rueda en cero; no demuestra que haya velocidad ni cadencia disponibles al pedalear.
 
-1. En Bluefy, verifica **v3.0.2** en Configuración, cambia a Real y conecta el rodillo.
+1. En Bluefy, verifica **v3.0.3** en Configuración, cambia a Real y conecta el rodillo.
 2. En Dispositivos → **Diagnóstico para pegar en el chat**, pulsa **Observar 30 segundos**.
 3. Pedalea suavemente manteniendo la app visible. No hace falta iniciar una actividad ni activar ERG.
 4. Al terminar aparece un informe de texto fijo. Pulsa **Copiar informe**, vuelve al chat y pégalo.
@@ -409,3 +409,9 @@ Fuentes adicionales de referencia técnica. Guía revisada el 15 de noviembre de
 - [QZ: proyecto de referencia; otros modelos no prueban compatibilidad Smart Air](https://github.com/cagnulein/qdomyos-zwift)
 
 **Objetivo de uso:** abrir una web HTTPS desde Bluefy, conectar localmente dispositivos compatibles y entrenar sin PC encendido. **Pendiente imprescindible:** confirmar la telemetría y, si existe, el control de tu Smart Air real mediante el diagnóstico y la lista anterior.
+
+## Actualización 3.0.3: pulsaciones visibles durante el ejercicio
+
+Entrenar y Rutas incluyen una franja de pulsaciones que permanece visible al desplazar la página. Durante una actividad también se mantiene al navegar por otras secciones. Usa las lecturas recientes del sensor de frecuencia cardíaca conectado, incluso durante una pausa y aunque el rodillo no transmita potencia. A los cinco segundos sin una nueva lectura muestra «—»; al desconectar indica el estado. En Demo no se presentan pulsaciones reales como simuladas.
+
+La prueba del usuario confirma potencia CPS y pulso HR en Bluefy con un fenix 6X Pro Solar. El reloj recibe el rodillo mediante ANT+, mientras la web usa BLE; los paquetes CPS observados no permiten calcular velocidad porque los contadores de rueda permanecen en cero.
