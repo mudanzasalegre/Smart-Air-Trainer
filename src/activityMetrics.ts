@@ -17,3 +17,10 @@ export function remainingEstimate(progress:RouteProgress[],remainingMeters:numbe
 }
 export function routeMeanSpeed(distanceMeters:number,activeSeconds:number){return activeSeconds>0?distanceMeters/activeSeconds*3.6:null;}
 export function timeDisplay(seconds:number|null){if(seconds===null||!Number.isFinite(seconds))return '—';const s=Math.max(0,Math.floor(seconds));return s>=3600?`${Math.floor(s/3600)}:${String(Math.floor(s/60)%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+
+/** Display resolution only; crossing times are interpolated, not certified timing. */
+export function timeMilliseconds(seconds:number|null){
+ if(seconds===null||!Number.isFinite(seconds))return '—';
+ const ms=Math.max(0,Math.round(seconds*1000)),whole=Math.floor(ms/1000);
+ return timeDisplay(whole)+','+String(ms%1000).padStart(3,'0');
+}

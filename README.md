@@ -1,4 +1,4 @@
-# Smart Air Trainer · 3.1.0
+# Smart Air Trainer · 3.3.0
 
 Aplicación personal de ciclismo indoor para **iPad y iPhone**, con entrenamientos, rutas geográficas, historial local y conexión BLE directa con dispositivos compatibles. Diseñada alrededor del **Bkool Smart Air**; no necesita que Windows permanezca encendido cuando se utiliza desde una web alojada.
 
@@ -449,3 +449,16 @@ Abre **Entrenar → Entrenar en velódromo**. Elige Lluís Puig (250 m), Galapag
 Fuentes consultadas el 16-11-2026: [UCI, Parte III, art. 3.6.068](https://www.uci.org/regulations/3MyLDDrwJCJJ0BGGOFzOat), [CSD — Lluís Puig](https://www.csd.gob.es/es/csd/instalaciones/centros-de-alto-rendimiento-y-tecnificacion-deportiva/centros-de-alto-rendimiento/cear-en-detalle/centro-4), [EducaMadrid — Galapagar](https://www.educa2.madrid.org/web/centro.cp.juandeaustria.alcala/ciclismo-en-el-velodromo-de-galapagar). UCI fija 250 m para Mundiales y Juegos Olímpicos. No se afirma reproducir todas las funciones de BKOOL.
 
 Pruebas: validación de objetivos, relación distancia/vueltas, precisión de 333⅓ m, cruce de múltiples metas, parciales, finalización por distancia/tiempo, pausa, pérdida de datos, física desde potencia y recuperación. Las pruebas automatizadas y de navegador no sustituyen una prueba física del rodillo en Bluefy.
+
+
+## 3.3.0 — Cronometraje de pista y seguimiento
+
+- Velódromo muestra tiempo activo, última/mejor vuelta y parciales como `mm:ss,SSS`; las sesiones nuevas conservan la fracción de segundo al guardar y recuperar. CSV de vueltas: tres decimales. El resto de actividades y la ETA mantienen segundos para legibilidad.
+- Es resolución de presentación, **no precisión certificada de 1 ms**: motor actualizado aproximadamente cada 250 ms, metas interpoladas y BLE a su frecuencia real. La telemetría sigue a 1 Hz. No se inventan milisegundos perdidos de actividades antiguas.
+- Historial → Seguimiento (también Estadísticas): ventanas de 7, 28 y 84 días naturales locales, comparación de volumen con periodo anterior equivalente; hoy puede estar incompleto. Demostraciones y sesiones reales separadas.
+- Volumen por bloques de hasta 7 días, carga TSS con número de sesiones elegibles, cobertura de potencia/pulso, siete zonas según FTP histórico, ajuste de potencia ±10 % sobre muestras evaluables con consigna positiva. Datos ausentes no equivalen a cero; la suma TSS es parcial si faltan sesiones elegibles.
+- Regularidad del velódromo: media, mejor parcial y coeficiente de variación poblacional (mínimo tres vueltas), con exclusión opcional de la primera vuelta. No se comparan como equivalentes fuentes o parámetros distintos.
+- Tabla exportable CSV, mejores medias sostenidas, comparación de sesiones (incluye NP, IF, TSS y pulso), enlaces a resultados para anotar RPE/sensaciones.
+- Orientaciones descriptivas basadas en cobertura, RPE, objetivos y volumen. Se puede preparar una sesión de referencia; nunca se cambia el FTP ni se inicia un entrenamiento automáticamente. No es prescripción médica ni cálculo de recuperación.
+- Metodología: [TrainingPeaks NP/IF/TSS](https://www.trainingpeaks.com/learn/articles/normalized-power-intensity-factor-training-stress/). Criterio conservador propio: 10 minutos continuos completos a 1 Hz para NP/IF/TSS. No requiere backend, APIs ni nuevas dependencias.
+- Persistencia compatible con IndexedDB existente, sin migraciones destructivas; los campos temporales siguen expresados en segundos numéricos y ahora retienen sus decimales en pista.

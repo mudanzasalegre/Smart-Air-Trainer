@@ -3,12 +3,12 @@ import {SHORT,uuid} from './protocols';
 export type SavedDiagnostic={at:string;text:string;json:string};
 export function buildDiagnostic(managers:{trainer:BluetoothManager;hr:BluetoothManager;cadence:BluetoothManager},includeIdentifiers=false,note='Instantánea manual'):SavedDiagnostic{
  const at=new Date().toISOString();
- const report={version:'3.2.0',at,note,scope:'Lecturas y notificaciones de servicios autorizados; no se envían consignas ni se inicia una actividad.',identifiersIncluded:includeIdentifiers,devices:Object.fromEntries(Object.entries(managers).map(([key,m])=>{
+ const report={version:'3.3.0',at,note,scope:'Lecturas y notificaciones de servicios autorizados; no se envían consignas ni se inicia una actividad.',identifiersIncluded:includeIdentifiers,devices:Object.fromEntries(Object.entries(managers).map(([key,m])=>{
   const d=structuredClone(m.diagnostic());
   if(!includeIdentifiers){delete d.device.id;d.services=d.services.map(row=>row.uuid===uuid(0x2a25)?{service:row.service,uuid:row.uuid,properties:row.properties,text:'Identificador omitido'}:row);}
   return [key,d];
  }))};
- const lines=['SMART AIR TRAINER · DIAGNÓSTICO 3.2.0',`Fecha: ${at}`,`Captura: ${note}`,report.scope,'Identificadores: '+(includeIdentifiers?'incluidos':'ID y número de serie omitidos'),''];
+ const lines=['SMART AIR TRAINER · DIAGNÓSTICO 3.3.0',`Fecha: ${at}`,`Captura: ${note}`,report.scope,'Identificadores: '+(includeIdentifiers?'incluidos':'ID y número de serie omitidos'),''];
  for(const [key,d] of Object.entries(report.devices)){
   lines.push(`=== ${key} · ${d.device.name||'Sin seleccionar'} ===`,`Estado GATT: ${d.device.state}`,`Conectado desde: ${d.connectedAt||'—'}`,`Protocolos con suscripción aceptada: ${d.protocols.join(', ')||'ninguno'}`,`Navegador: ${d.userAgent}`,`API: ${JSON.stringify(d.support)}`,`Lecturas recientes (caducan a 5 s): ${JSON.stringify(d.readings)}`,`Antigüedad última métrica: ${d.lastReadingAgeSeconds??'—'} s`,`Control FTMS: bits ${d.features}, potencia ${JSON.stringify(d.powerRange)}, resistencia ${JSON.stringify(d.resistanceRange)}`);
   if(includeIdentifiers)lines.push(`ID: ${d.device.id||'—'}`);
