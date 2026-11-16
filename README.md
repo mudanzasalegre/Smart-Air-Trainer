@@ -1,4 +1,4 @@
-# Smart Air Trainer · 3.3.0
+# Smart Air Trainer · 3.4.0
 
 Aplicación personal de ciclismo indoor para **iPad y iPhone**, con entrenamientos, rutas geográficas, historial local y conexión BLE directa con dispositivos compatibles. Diseñada alrededor del **Bkool Smart Air**; no necesita que Windows permanezca encendido cuando se utiliza desde una web alojada.
 
@@ -462,3 +462,24 @@ Pruebas: validación de objetivos, relación distancia/vueltas, precisión de 33
 - Orientaciones descriptivas basadas en cobertura, RPE, objetivos y volumen. Se puede preparar una sesión de referencia; nunca se cambia el FTP ni se inicia un entrenamiento automáticamente. No es prescripción médica ni cálculo de recuperación.
 - Metodología: [TrainingPeaks NP/IF/TSS](https://www.trainingpeaks.com/learn/articles/normalized-power-intensity-factor-training-stress/). Criterio conservador propio: 10 minutos continuos completos a 1 Hz para NP/IF/TSS. No requiere backend, APIs ni nuevas dependencias.
 - Persistencia compatible con IndexedDB existente, sin migraciones destructivas; los campos temporales siguen expresados en segundos numéricos y ahora retienen sus decimales en pista.
+
+
+## Versión 3.4.0 · Biblioteca de rutas y entrenamientos
+
+En **Rutas → Mis rutas**, las rutas ya guardadas aparecen automáticamente como tarjetas. No hay que importarlas otra vez ni se modifica su geometría. La vista inicial muestra la biblioteca si ya hay rutas locales.
+
+- Cada tarjeta incluye perfil de elevación por pendiente, distancia, ascenso (parcial si faltan datos), altitud mínima/máxima, fecha y duración aproximada. Los huecos de altitud no se rellenan visualmente.
+- **Ver ficha** abre mapa y perfil sincronizados, descenso, pendiente máxima absoluta estimada, cobertura y procedencia de elevación. Desde ahí se puede preparar, editar, duplicar, exportar GPX o eliminar (con confirmación y recuperación en la pantalla de rutas).
+- Busca por nombre o descripción, con o sin tildes. Filtra por distancia, ascenso, tiempo estimado, modalidad, origen y favoritos. Los perfiles incompletos se excluyen de los rangos de ascenso para no clasificarlos como llanos.
+- La duración se calcula como `distancia / velocidad de referencia`, inicialmente 20 km/h y editable entre las opciones de 10–40 km/h. No es una predicción física, no incorpora paradas ni dificultad y no cambia la velocidad del simulador.
+- **Mapa** sitúa las salidas guardadas, agrupa puntos próximos y destaca el recorrido seleccionado. «Salidas en esta zona» filtra por la posición inicial dentro del encuadre, no por intersección de toda la ruta. Los grupos se amplían; a zoom alto se puede elegir entre salidas coincidentes. Las mismas rutas son accesibles por tarjetas.
+- **Buscar localidad** usa el proveedor de geocodificación ya configurado (Open-Meteo/GeoNames por defecto); no busca rutas en ROUVY ni descarga un catálogo de terceros. Solo se consulta al enviar la búsqueda. Se conservan cancelación, caché y límites existentes. No se solicita ubicación GPS.
+- El mapa utiliza las fuentes existentes OSM o IGN España, con atribución. «Solo trazado · offline» conserva geometrías sin descargar teselas. No se precargan mapas en las tarjetas ni se promete cartografía offline.
+- **Entrenamientos** incorpora búsqueda, duración, categorías, ordenación y favoritos, manteniendo los perfiles de zonas. Velódromos por distancia/vueltas y sesiones libres se clasifican como «Sin tiempo fijo».
+- Las estrellas comparten los favoritos de **Inicio** y se incluyen en las copias de seguridad existentes. Se actualizan en una transacción IndexedDB sin sustituir objetivos semanales. No se cambia el esquema ni se sobrescriben sesiones.
+
+Inspiración funcional, sin copiar marca, contenido ni diseño: [búsqueda en el mapa de ROUVY](https://support.rouvy.com/hc/es/articles/33768500392465-B%C3%BAsqueda-en-el-mapa-de-ROUVY) y [descubrimiento de rutas](https://support.rouvy.com/hc/es/articles/360018680257-Descubrir-rutas-virtuales-en-ROUVY). La biblioteca de Smart Air es local y personal.
+
+Validación: pruebas unitarias de búsqueda, filtros y límites, estimaciones, objetivos de velódromo, encuadres con cruce de antimeridiano, agrupación, huecos de elevación y favoritos transaccionales. Se conserva la suite de protocolos, motores, persistencia y migraciones. La comprobación en tamaños de iPad/iPhone desde el navegador de desarrollo no sustituye la prueba física de Bluefy con tu rodillo.
+
+Verificación de interfaz 3.4.0: importación GPX de prueba, guardado, búsqueda sin tildes, favoritos compartidos con Inicio, cambio de referencia de tiempo, ficha con perfil/mapa sincronizados, duplicación, borrado con confirmación y deshacer, protección del borrador, búsqueda real de Sagunto y selección de salidas agrupadas, vista sin teselas, entrenamiento filtrado que abre su preparación y protección de una actividad recuperable. Comprobadas anchuras de 1024 y 375 px sin desbordamiento horizontal. Suite: 135 pruebas correctas; 2 consultas externas opcionales omitidas.

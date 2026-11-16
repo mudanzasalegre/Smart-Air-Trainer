@@ -2,7 +2,7 @@ import type {SavedDiagnostic} from './diagnostics';
 import type {Session,Workout,Profile} from './domain';
 import type {StoredRoute,ProviderSettings,SimulationSettings,RouteDraft} from './routes/types';
 import type {EditorDraft} from './routes/editorDraft';
-import type {PlanEntry,TrainingPreferences} from './training/model';
+import {defaultTrainingPreferences,type PlanEntry,type TrainingPreferences} from './training/model';
 const DB='smart-air-trainer-v1';
 let connection:Promise<IDBDatabase>|undefined;
 function open(){if(!connection)connection=new Promise<IDBDatabase>((resolve,reject)=>{const r=indexedDB.open(DB,3);r.onupgradeneeded=()=>{for(const key of ['sessions','workouts','settings','routes','providerCache','plans'])if(!r.result.objectStoreNames.contains(key))r.result.createObjectStore(key);};r.onblocked=()=>{connection=undefined;reject(new Error('Cierra otras pestañas de Smart Air para completar la actualización local.'));};r.onsuccess=()=>{r.result.onversionchange=()=>{r.result.close();connection=undefined;};resolve(r.result);};r.onerror=()=>{connection=undefined;reject(r.error);};});return connection;}
@@ -19,7 +19,8 @@ export const storage={
  savePlan:(v:PlanEntry)=>op('plans','readwrite',s=>s.put(v,v.id)),
  removePlan:(id:string)=>op('plans','readwrite',s=>s.delete(id)),
  trainingPreferences:()=>op<TrainingPreferences|undefined>('settings','readonly',s=>s.get('trainingPreferences')),
- saveTrainingPreferences:(v:TrainingPreferences)=>op('settings','readwrite',s=>s.put(v,'trainingPreferences')),
+ saveTrainingPreferences:async(v:TrainingPreferences)=>{await op('settings','readwrite',s=>s.put(v,'trainingPreferences'));if(typeof window!=='undefined')window.dispatchEvent(new Event('smart-air-preferences'));},
+ toggleFavorite:async(key:string)=>{const db=await open();await new Promise<void>((resolve,reject)=>{const tx=db.transaction('settings','readwrite'),store=tx.objectStore('settings'),r=store.get('trainingPreferences');r.onsuccess=()=>{const p:TrainingPreferences=r.result||structuredClone(defaultTrainingPreferences);if(!p.favorites.includes(key)&&p.favorites.length>=500){tx.abort();return;}store.put({...p,favorites:p.favorites.includes(key)?p.favorites.filter(x=>x!==key):[...p.favorites,key]},'trainingPreferences');};tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Máximo de 500 favoritos. Quita uno antes de añadir otro.'));});if(typeof window!=='undefined')window.dispatchEvent(new Event('smart-air-preferences'));},
 
  editorDraft:()=>op<EditorDraft|undefined>('settings','readonly',s=>s.get('routeEditorDraft')),
  saveEditorDraft:(v:EditorDraft)=>op('settings','readwrite',s=>s.put(v,'routeEditorDraft')),
