@@ -429,3 +429,23 @@ Al iniciar un entrenamiento o recorrido se abre automáticamente una pantalla de
 - iPhone: controles y resumen compacto de potencia, pulso y velocidad permanecen en la parte inferior. iPad horizontal: perfil, terreno, métricas y controles comparten la pantalla.
 
 No cambia el esquema de IndexedDB ni los protocolos BLE. No se añaden vídeos, avatares ni órdenes propietarias. La pendiente de ruta es geográfica; no implica control electrónico del Smart Air.
+
+
+## 3.2.0 — Velódromo
+
+Abre **Entrenar → Entrenar en velódromo**. Elige Lluís Puig (250 m), Galapagar (250 m) o una pista genérica de 200, 250, 333⅓, 400 o 500 m. La vista es un esquema propio, no una reproducción ni homologación del recinto.
+
+- Objetivos: distancia (hasta 500 km), vueltas enteras (hasta 2000), minutos (hasta 360) o libre. Todas las sesiones tienen un límite de seis horas registradas.
+- Guarda el entrenamiento para repetirlo desde Velódromo, Entrenamientos o la biblioteca. Se conserva en IndexedDB junto a los demás entrenamientos y en la copia JSON.
+- El punto gira en sentido antihorario desde meta. Se contabilizan vueltas completas, parcial actual, última y mejor vuelta. Los cruces se interpolan dentro del paso temporal; las pausas no cuentan en los parciales.
+- Perfil longitudinal plano (0 %), progreso total, distancia restante, tiempo activo, tiempo estimado al ritmo reciente, potencia, zona FTP, pulso, velocidad, cadencia disponible y kcal estimadas. El peralte no se interpreta como subida.
+- **Smart Air CPS:** selecciona velocidad virtual desde potencia. Usa la física y parámetros guardados en Rutas (masa, aerodinámica, rodadura y transmisión), sobre terreno plano. Es una aproximación longitudinal sin rebufo ni dinámica específica de pista. La longitud de pista cambia el cómputo de vueltas, no el modelo físico.
+- Velocidad medida requiere datos recientes de velocidad: no se deduce de los contadores CPS en cero. La falta de datos o desconexión detiene el avance; reanuda tras recuperar la fuente elegida. No se inventa cadencia. El Garmin puede aportar pulso BLE independientemente del rodillo.
+- No envía consignas de resistencia: al iniciar se libera el controlador previo si está activo. La pendiente plana dibujada no garantiza una resistencia física concreta.
+- Demo separada, ×1/×5/×20. Los tiempos de la demo son tiempos simulados salvo “Transcurrido”.
+- Borrador automático cada cinco segundos, al pausar y al ocultar la aplicación. Tras recargar se recupera en pausa; si era demo, pulsa “Recuperar en modo demo”. Mantén Bluefy visible y el dispositivo desbloqueado.
+- Guarda la actividad en el historial existente; incluye configuración, distancia exacta y parciales de vuelta. JSON conserva estos datos; CSV telemetría conserva velocidad del sensor, y el CSV de vueltas contiene tiempos activos y parciales. No se exporta una geografía GPX ficticia.
+
+Fuentes consultadas el 16-11-2026: [UCI, Parte III, art. 3.6.068](https://www.uci.org/regulations/3MyLDDrwJCJJ0BGGOFzOat), [CSD — Lluís Puig](https://www.csd.gob.es/es/csd/instalaciones/centros-de-alto-rendimiento-y-tecnificacion-deportiva/centros-de-alto-rendimiento/cear-en-detalle/centro-4), [EducaMadrid — Galapagar](https://www.educa2.madrid.org/web/centro.cp.juandeaustria.alcala/ciclismo-en-el-velodromo-de-galapagar). UCI fija 250 m para Mundiales y Juegos Olímpicos. No se afirma reproducir todas las funciones de BKOOL.
+
+Pruebas: validación de objetivos, relación distancia/vueltas, precisión de 333⅓ m, cruce de múltiples metas, parciales, finalización por distancia/tiempo, pausa, pérdida de datos, física desde potencia y recuperación. Las pruebas automatizadas y de navegador no sustituyen una prueba física del rodillo en Bluefy.

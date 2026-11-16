@@ -1,11 +1,12 @@
+import {validVelo,type VeloConfig,type VeloActivity} from './velodrome/model';
 import type {RouteActivity} from './routes/types';
 export type Mode = 'real' | 'demo';
 export type Metric = 'power'|'cadence'|'speed'|'heartRate';
 export type Telemetry = Partial<Record<Metric, number>>;
 export type Sample = {t:number; power:number|null; cadence:number|null; speed:number|null; heartRate:number|null; target:number|null};
 export type Block = {name:string; duration:number; unit:'ftp'|'watts'; intensity:number};
-export type Workout = {id:string; name:string; description:string; category:string; blocks:Block[]; custom?:boolean};
-export type Session = {planId?:string;notes?:string;rpe?:number|null;id:string; date:string; workout:Workout; mode:Mode; ftp:number; duration:number; elapsed:number; samples:Sample[]; routeActivity?:RouteActivity; interrupted?:boolean};
+export type Workout = {id:string; name:string; description:string; category:string; blocks:Block[]; custom?:boolean; velodrome?:VeloConfig};
+export type Session = {planId?:string;notes?:string;rpe?:number|null;id:string; date:string; workout:Workout; mode:Mode; ftp:number; duration:number; elapsed:number; samples:Sample[]; velodrome?:VeloActivity; routeActivity?:RouteActivity; interrupted?:boolean};
 export type Profile = {name:string; ftp:number; wheelMm:number};
 export const defaultProfile:Profile={name:'Jonsui',ftp:148,wheelMm:2105};
 const b=(name:string,duration:number,intensity:number):Block=>({name,duration,intensity,unit:'ftp'});
@@ -23,7 +24,7 @@ export const zoneNames=['Recuperación','Resistencia','Tempo','Umbral','VO₂ m�
 export const zoneColors=['#829ba6','#62b8e5','#70dab0','#e4d06e','#efad6e','#ed818b','#b59ef4'];
 export const zone=(p:number,ftp:number)=>{const i=[.55,.75,.90,1.05,1.20,1.50].findIndex(v=>p<=ftp*v);return i<0?6:i;};
 export const clock=(s:number)=>{s=Math.max(0,Math.floor(s));return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;};
-export function validateWorkout(w:Workout){return w.name.trim().length>0&&w.name.length<=80&&w.blocks.length>0&&w.blocks.length<=100&&duration(w)<=21600&&w.blocks.every(b=>Number.isFinite(b.duration)&&b.duration>=10&&b.duration<=7200&&Number.isFinite(b.intensity)&&b.intensity>=0&&b.intensity<=(b.unit==='ftp'?250:1000));}
+export function validateWorkout(w:Workout){if(w.velodrome)return w.name.trim().length>0&&w.name.length<=80&&w.blocks.length===0&&validVelo(w.velodrome);return w.name.trim().length>0&&w.name.length<=80&&w.blocks.length>0&&w.blocks.length<=100&&duration(w)<=21600&&w.blocks.every(b=>Number.isFinite(b.duration)&&b.duration>=10&&b.duration<=7200&&Number.isFinite(b.intensity)&&b.intensity>=0&&b.intensity<=(b.unit==='ftp'?250:1000));}
 export interface NativeTransportContract {connect(options:{services:string[]}):Promise<void>;read(service:string,characteristic:string):Promise<DataView>;subscribe(service:string,characteristic:string,onValue:(value:DataView)=>void):Promise<()=>Promise<void>>;write(service:string,characteristic:string,value:Uint8Array):Promise<void>;disconnect():Promise<void>}
 export interface TrainerProtocolAdapter {id:string; decode(characteristic:string,value:DataView):Telemetry;}
 export const bkoolSmartAirAdapter={id:'bkool-smart-air',status:'diagnostic-only',reason:'No se ha verificado un protocolo propietario para Smart Air. Se usan únicamente servicios estándar detectados.'} as const;

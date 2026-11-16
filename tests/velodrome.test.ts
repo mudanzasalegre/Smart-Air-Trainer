@@ -1,0 +1,16 @@
+import {describe,it,expect} from 'vitest';
+import {VelodromeEngine,defaultVelo,goalMeters,lapPosition,validVelo,tracks,type VeloConfig} from '../src/velodrome/model';
+import {defaultSimulation} from '../src/routes/types';
+import {validateWorkout,type Workout} from '../src/domain';
+const data={power:100,cadence:null,speed:36,heartRate:100};
+function setup(c:Partial<VeloConfig>={},rate=1){const e=new VelodromeEngine();e.prepare({id:'v',name:'Test',description:'',category:'Velódromo',blocks:[],custom:true,velodrome:{...defaultVelo,speedSource:'measured',...c}},rate===1?'real':'demo',148,{...defaultSimulation,demoRate:rate});e.ride.start(0);return e;}
+describe('Velodrome',()=>{
+ it('validates presets and 20km = 80 laps',()=>{expect(goalMeters(defaultVelo)/250).toBe(80);expect(validVelo({...defaultVelo,amount:NaN})).toBe(false);expect(validVelo({...defaultVelo,goal:'laps',amount:1.2})).toBe(false);expect(validVelo({...defaultVelo,lapLength:666})).toBe(false);const e=setup();expect(validateWorkout(e.workout as Workout)).toBe(true);});
+ it('handles exact 333⅓ m without accumulating rounding error',()=>{const l=tracks.find(t=>t.id==='333')!.length;expect(lapPosition(1000,l).completed).toBe(3);expect(lapPosition(50000,l).completed).toBe(150);expect(lapPosition(249.99,250).completed).toBe(0);});
+ it('counts interpolated lap splits, finishes exactly at distance',()=>{const e=setup({goal:'laps',amount:2});for(let t=1000;t<=60000;t+=1000)e.tick(t,data,true);expect(e.ride.distance).toBe(500);expect(e.laps.map(l=>l.seconds)).toEqual([25,25]);expect(e.ride.activeTime).toBe(50);expect(e.complete).toBe(true);expect(e.session().routeActivity).toBeUndefined();expect(e.session().velodrome?.distance).toBe(500);});
+ it('handles multiple laps per accelerated tick',()=>{const e=setup({goal:'laps',amount:4},20);e.tick(3000,{...data,speed:90},true);expect(e.laps.length).toBe(4);expect(e.ride.distance).toBe(1000);expect(e.laps.every(l=>Math.abs(l.seconds-10)<1e-6)).toBe(true);});
+ it('does not advance in pause or stale/disconnected data',()=>{const e=setup();e.tick(1000,data,true);e.ride.pause();e.tick(2000,data,true);expect(e.ride.distance).toBe(10);e.ride.start(3000);e.tick(4000,{...data,speed:null},true);expect(e.ride.state).toBe('disconnected');expect(e.ride.distance).toBe(10);e.ride.start(5000);e.tick(6000,data,true);expect(e.ride.distance).toBe(20);});
+ it('finishes a time target without acceleration overshoot',()=>{const e=setup({goal:'time',amount:.1},20);e.tick(1000,data,true);expect(e.ride.activeTime).toBe(6);expect(e.ride.distance).toBe(60);expect(e.ride.state).toBe('finished');});
+ it('restores in pause retaining progress and lap history',()=>{const e=setup();for(let t=1000;t<=30000;t+=1000)e.tick(t,data,true);const other=new VelodromeEngine();other.restore(e.draft());expect(other.ride.state).toBe('paused');expect(other.ride.distance).toBe(300);expect(other.laps).toEqual(e.laps);});
+ it('uses watts for virtual speed, not stale measured speed',()=>{const e=setup({speedSource:'physics'});e.tick(1000,{...data,speed:null},true);expect(e.ride.distance).toBeGreaterThan(0);expect(e.session().samples[0].speed).toBeNull();e.tick(2000,{...data,power:null},true);expect(e.ride.state).toBe('disconnected');});
+});
