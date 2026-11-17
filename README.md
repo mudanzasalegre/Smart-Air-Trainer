@@ -1,12 +1,22 @@
-# Smart Air Trainer · 3.4.0
+# Smart Air Trainer · 3.5.0
 
 Aplicación personal de ciclismo indoor para **iPad y iPhone**, con entrenamientos, rutas geográficas, historial local y conexión BLE directa con dispositivos compatibles. Diseñada alrededor del **Bkool Smart Air**; no necesita que Windows permanezca encendido cuando se utiliza desde una web alojada.
 
 - **Web existente:** https://smart-air-trainer-jonsui.monmode.chatgpt.site
 - **GitHub:** https://github.com/mudanzasalegre/Smart-Air-Trainer
-- **Versión:** 3.1.0 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
+- **Versión:** 3.5.0 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
 - Sin backend de sesiones, cuenta deportiva, analítica ni API de pago obligatoria.
 - La web y el repositorio son públicos; los datos deportivos permanecen en el almacenamiento local del navegador.
+
+## Empezar con la versión 3.5.0
+
+1. Abre la web en Bluefy y comprueba la versión en **Inicio**. En **Dispositivos**, conecta el BkoolAir y, si quieres pulso, activa la emisión en el widget de frecuencia cardíaca del fēnix y selecciona el reloj por separado.
+2. En **Entrenar → Fuente de velocidad**, elige **Virtual en llano desde vatios** para entrenamientos libres o por bloques. La opción **Medida por el sensor** usa los km/h recibidos. Para recordar la elección entre visitas abre **Perfil → Entrenamientos en llano**, elige la fuente, ajusta los dos pesos y guarda el perfil.
+3. Al iniciar se fijan la fuente, los pesos y el FTP para esa sesión. El modelo usa un terreno al 0 %, la potencia reciente, la masa conjunta, la resistencia a la rodadura y al aire y la eficiencia de transmisión. Arranca desde parado y registra una muestra por segundo activo. Los pesos iniciales del modelo son 70 kg y 10 kg. Cada ciclista puede ajustarlos.
+4. Si deja de llegar potencia y la lectura caduca a los cinco segundos, el campo virtual queda vacío y la distancia deja de crecer. Pausar o recuperar un borrador reinicia la velocidad virtual desde parado y conserva la distancia registrada. La cadencia requiere una lectura válida de rpm. En Demo se identifica la potencia simulada.
+5. Al guardar, el detalle y el JSON conservan la fuente. En el CSV de un entrenamiento, `speed_kmh` es la velocidad media de ese segundo usada para la distancia y `sensor_speed_kmh` conserva la lectura de rueda disponible. Los segundos sin lectura quedan en blanco. En rutas y pista, el CSV de telemetría conserva la velocidad recibida como hasta ahora.
+6. Abre **Historial → Seguimiento** y selecciona 7, 28 u 84 días. En **Tus mejores medias del periodo** puedes comparar 5 s, 30 s, 1 min, 5 min y 20 min con la ventana anterior de igual duración. Toca una marca para abrir su sesión y ver la curva de potencia, la media, el máximo y el pulso disponible de ese tramo. Los tiempos indican el comienzo y el final del esfuerzo en el reloj de tiempo activo. Las reanudaciones registradas desde 3.5 delimitan los tramos. En las sesiones antiguas se utilizan las muestras guardadas.
+7. Para actualizar una instalación abierta, termina o guarda la actividad antes de recargar la web en Bluefy. Usa el mismo navegador y la misma dirección para acceder al historial local. La actualización admite los perfiles, las sesiones y los borradores anteriores.
 
 > **Estado real de compatibilidad:** las capturas del usuario en Bluefy muestran conexión GATT y notificaciones Cycling Power Service de su BkoolAir, con firmware declarado 4.32. Los informes posteriores del usuario confirman potencia variable de 91–96 W y pulsaciones BLE del Garmin de 70–77 ppm; no se ha validado el control físico del rodillo. No hay una configuración que pueda garantizar por sí sola la lectura y el control si el firmware no expone servicios compatibles. La primera conexión debe confirmar qué anuncia tu unidad. Este README diferencia funcionamiento de la app, acceso Bluetooth y control efectivo del rodillo.
 
@@ -53,7 +63,7 @@ La documentación de ROUVY identifica el **Smart Air** como compatible por Bluet
 1. Instala **[Bluefy – Web BLE Browser](https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055)** desde App Store. Revisa la ficha y las condiciones vigentes; no hace falta contratar un servicio de entrenamiento.
 2. Abre **Bluefy directamente** y escribe la URL de Smart Air Trainer. Un enlace abierto dentro de ChatGPT, Safari u otro navegador no se traslada automáticamente a Bluefy.
 3. Si la web de Sites pide acceso, inicia sesión con la cuenta propietaria **en ese navegador**. Tener sesión en Safari no garantiza tenerla en Bluefy. Si ese flujo de acceso no funciona en Bluefy, utiliza un despliegue HTTPS alternativo de este código: el login del alojamiento y Bluetooth son problemas diferentes.
-4. Entra en **Configuración** y comprueba `v3.1.0`; después, en **Perfil**, revisa el FTP, nombre y circunferencia de rueda.
+4. Entra en **Configuración** y comprueba `v3.5.0`; después, en **Perfil**, revisa el FTP, nombre y circunferencia de rueda.
 5. Prueba primero **Demo**, inicia una sesión corta y guárdala. Así verificas navegación, gráficos y almacenamiento antes de probar el hardware.
 6. Termina y guarda o descarta esa demo. Cambia a **Real** y sigue el apartado de conexión.
 
@@ -123,7 +133,7 @@ La opción **Autorizar UUID adicionales** acepta UUID conocidos por documentaci�
 
 Las capturas del usuario muestran UUID cortos en mayúsculas (`1818`, `2A63`). La app ahora los normaliza al UUID estándar completo antes de identificar protocolos, interpretar notificaciones o gestionar FTMS. Se conserva también el UUID original para diagnóstico. El paquete de la captura contiene potencia 0 W y contadores de rueda en cero; no demuestra que haya velocidad ni cadencia disponibles al pedalear.
 
-1. En Bluefy, verifica **v3.1.0** en Configuración, cambia a Real y conecta el rodillo.
+1. En Bluefy, verifica **v3.5.0** en Configuración, cambia a Real y conecta el rodillo.
 2. En Dispositivos → **Diagnóstico para pegar en el chat**, pulsa **Observar 30 segundos**.
 3. Pedalea suavemente manteniendo la app visible. No hace falta iniciar una actividad ni activar ERG.
 4. Al terminar aparece un informe de texto fijo. Pulsa **Copiar informe**, vuelve al chat y pégalo.

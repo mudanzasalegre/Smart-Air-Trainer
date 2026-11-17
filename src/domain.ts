@@ -1,13 +1,14 @@
+import type {WorkoutMotion} from './workoutSpeed';
 import {validVelo,type VeloConfig,type VeloActivity} from './velodrome/model';
 import type {RouteActivity} from './routes/types';
 export type Mode = 'real' | 'demo';
 export type Metric = 'power'|'cadence'|'speed'|'heartRate';
 export type Telemetry = Partial<Record<Metric, number>>;
-export type Sample = {t:number; power:number|null; cadence:number|null; speed:number|null; heartRate:number|null; target:number|null};
+export type Sample = {segmentStart?:true; sensorSpeed?:number|null; t:number; power:number|null; cadence:number|null; speed:number|null; heartRate:number|null; target:number|null};
 export type Block = {name:string; duration:number; unit:'ftp'|'watts'; intensity:number};
 export type Workout = {id:string; name:string; description:string; category:string; blocks:Block[]; custom?:boolean; velodrome?:VeloConfig};
-export type Session = {planId?:string;notes?:string;rpe?:number|null;id:string; date:string; workout:Workout; mode:Mode; ftp:number; duration:number; elapsed:number; samples:Sample[]; velodrome?:VeloActivity; routeActivity?:RouteActivity; interrupted?:boolean};
-export type Profile = {name:string; ftp:number; wheelMm:number};
+export type Session = {workoutMotion?:WorkoutMotion;planId?:string;notes?:string;rpe?:number|null;id:string; date:string; workout:Workout; mode:Mode; ftp:number; duration:number; elapsed:number; samples:Sample[]; velodrome?:VeloActivity; routeActivity?:RouteActivity; interrupted?:boolean};
+export type Profile = {workoutMotion?:WorkoutMotion;name:string; ftp:number; wheelMm:number};
 export const defaultProfile:Profile={name:'Jonsui',ftp:148,wheelMm:2105};
 const b=(name:string,duration:number,intensity:number):Block=>({name,duration,intensity,unit:'ftp'});
 export const workouts:Workout[]=[
