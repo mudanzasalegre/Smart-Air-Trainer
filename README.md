@@ -1,16 +1,24 @@
-# Smart Air Trainer · 3.5.0
+# Smart Air Trainer · 3.5.1
 
 Aplicación personal de ciclismo indoor para **iPad y iPhone**, con entrenamientos, rutas geográficas, historial local y conexión BLE directa con dispositivos compatibles. Diseñada alrededor del **Bkool Smart Air**; no necesita que Windows permanezca encendido cuando se utiliza desde una web alojada.
 
 - **Web existente:** https://smart-air-trainer-jonsui.monmode.chatgpt.site
 - **GitHub:** https://github.com/mudanzasalegre/Smart-Air-Trainer
-- **Versión:** 3.5.0 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
+- **Versión:** 3.5.1 · React + TypeScript + Vite · IndexedDB · Web Bluetooth · Leaflet.
 - Sin backend de sesiones, cuenta deportiva, analítica ni API de pago obligatoria.
 - La web y el repositorio son públicos; los datos deportivos permanecen en el almacenamiento local del navegador.
 
+## Garmin y Bici indoor en 3.5.1
+
+Desde el widget de pulso del fēnix 6X Pro Solar, mantén pulsado MENU y activa **Opciones de frecuencia cardiaca → Transmisión durante la actividad** una vez. Inicia y graba **Bici indoor** en el reloj. El Garmin puede recibir el rodillo por ANT+ mientras Bluefy recibe la potencia del Bkool y el pulso del reloj por dos conexiones BLE independientes.
+
+En modo Real, conecta el rodillo y selecciona **Conectar reloj** en Entrenar, Rutas, Velódromo o Dispositivos. Después de una suscripción válida la app guarda localmente el identificador autorizado. En conexiones posteriores del rodillo intenta recuperar ese reloj. El navegador debe conservar el permiso y facilitar el dispositivo. Si el reloj se ha apagado, inicia la emisión y usa el botón de la pantalla de ejercicio. Desconectar el sensor de pulso desde Dispositivos elimina el recuerdo local. Cada navegador y dispositivo tiene sus propios permisos.
+
+La app muestra las ppm que llegan por Bluetooth. El ajuste del reloj y el inicio y guardado de su actividad se hacen en el fēnix. En esta unidad se ha confirmado la emisión desde el widget. La emisión BLE simultánea con Bici indoor requiere comprobarla en el reloj con su firmware instalado. [Manual de Garmin](https://www8.garmin.com/manuals/webhelp/fenix66s6xpro/ES-XM/GUID-57A88A77-3813-4E79-9DB1-FC95B06F01BA.html).
+
 ## Empezar con la versión 3.5.0
 
-1. Abre la web en Bluefy y comprueba la versión en **Inicio**. En **Dispositivos**, conecta el BkoolAir y, si quieres pulso, activa la emisión en el widget de frecuencia cardíaca del fēnix y selecciona el reloj por separado.
+1. Abre la web en Bluefy y comprueba la versión en **Inicio**. En **Dispositivos**, conecta el BkoolAir y, si quieres pulso, inicia Bici indoor con la emisión de pulso configurada y vincula el reloj la primera vez.
 2. En **Entrenar → Fuente de velocidad**, elige **Virtual en llano desde vatios** para entrenamientos libres o por bloques. La opción **Medida por el sensor** usa los km/h recibidos. Para recordar la elección entre visitas abre **Perfil → Entrenamientos en llano**, elige la fuente, ajusta los dos pesos y guarda el perfil.
 3. Al iniciar se fijan la fuente, los pesos y el FTP para esa sesión. El modelo usa un terreno al 0 %, la potencia reciente, la masa conjunta, la resistencia a la rodadura y al aire y la eficiencia de transmisión. Arranca desde parado y registra una muestra por segundo activo. Los pesos iniciales del modelo son 70 kg y 10 kg. Cada ciclista puede ajustarlos.
 4. Si deja de llegar potencia y la lectura caduca a los cinco segundos, el campo virtual queda vacío y la distancia deja de crecer. Pausar o recuperar un borrador reinicia la velocidad virtual desde parado y conserva la distancia registrada. La cadencia requiere una lectura válida de rpm. En Demo se identifica la potencia simulada.
@@ -156,16 +164,9 @@ En Real, activa la emisión del sensor y usa **Dispositivos → Frecuencia card�
 
 Usa **Dispositivos → Cadencia y velocidad** para un sensor CSC o potenciómetro compatible. Cuando la velocidad se deriva de revoluciones de rueda, revisa la circunferencia en Perfil: **2105 mm es un valor inicial, no una medida del Smart Air**. Una velocidad FTMS directa no usa ese parámetro. Si se conectan fuentes con métricas coincidentes, evita emisores duplicados: esta versión mantiene el último valor recibido, no un selector avanzado de fuente por métrica.
 
-### Garmin Fenix 6 Solar
+### Garmin fēnix 6X Pro Solar
 
-Garmin incluye la familia fēnix 6 Solar entre los relojes compatibles con **Carrera virtual / Virtual Run**, perfil que puede emitir datos por Bluetooth. No se debe equiparar automáticamente «Emitir FC» con emisión BLE en cualquier modo.
-
-1. Comprueba que el reloj dispone del perfil Carrera virtual y del software requerido.
-2. Activa ese perfil conforme a las instrucciones de Garmin y busca el reloj desde la sección de pulso de esta app.
-3. Comprueba que aparece Heart Rate Service y que llega frecuencia cardíaca. Si no sucede, no hay integración de pulso confirmada; prueba un sensor BLE compatible o exporta el diagnóstico.
-4. No uses la velocidad ni la cadencia de carrera del reloj como si fueran medidas de ciclismo del rodillo.
-
-[Instrucciones oficiales de Garmin](https://support.garmin.com/en-GB/?faq=pyniXQfLiu3BS1yKFlLn36). Esta aplicación no sincroniza con Garmin Connect; una grabación simultánea en el reloj es independiente.
+Para grabar ciclismo, sigue las indicaciones de **Garmin y Bici indoor en 3.5.1** al principio de esta guía. En Dispositivos → Diagnóstico de conexión → Pulso, comprueba la suscripción al servicio 180D y las notificaciones 2A37 mientras corre el cronómetro del reloj. El pulso reciente aparece en las pantallas de ejercicio. Guarda también la actividad en el reloj para conservar su registro Garmin.
 
 ## 5. Entrenamientos, ERG y seguridad
 

@@ -29,3 +29,7 @@
 .workout-motion select,.workout-preferences select,.workout-preferences input {min-height:44px;max-width:100%}
 .workout-preferences {border:1px solid var(--border,#34515b);border-radius:10px;margin:1rem 0;padding:.8rem 1rem}
 .weight-fields {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem}
+.pair-heart{min-height:44px;white-space:normal}
+.activity-metric .pair-heart{margin-top:.35rem;padding:.35rem .6rem}
+.garmin-setup summary{cursor:pointer;font-weight:600}
+.garmin-setup li{margin:.65rem 0}
